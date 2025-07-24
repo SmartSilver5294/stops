@@ -1,0 +1,16 @@
+---
+title: "Stops"
+author: "Ayush Chandra"
+format: html
+execute: 
+  echo: false
+---
+
+
+```{r}
+#| message: false
+library(tidyverse)
+library(primer.data)
+```
+
+Racial arguments in policing outcomes remain an important issue, particularly when examining how factors like race and location influence the likelihood of an arrest during traffic stops. Using data from a study of New Orleans drivers, we wish to understand how driver race can have an impact on the probability of getting arrested during a traffic stop.
