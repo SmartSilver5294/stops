@@ -13,6 +13,7 @@ library(tidyverse)
 library(primer.data)
 library(tidymodels)
 library(broom)
+library(marginaleffects)
 
 x <- stops |>
   filter(race %in% c("black", "white")) |>
@@ -27,6 +28,13 @@ x <- stops |>
 fit_stops <- linear_reg() |>
     set_engine("lm") |>
     fit(arrested ~ sex + race*zone, data = x)
+
+#| label: augment-model
+#| message: false
+#| warning: false
+
+preds <- augment(fit_stops, new_data = x)
+
 ```
 
 ```{r}
@@ -67,5 +75,35 @@ tidy(fit_stops) |>
 
 ```
 
-Racial arguments in policing outcomes remain an important issue, particularly when examining how factors like race and location influence the likelihood of an arrest during traffic stops. Using data from a study of New Orleans drivers, we wish to understand how driver race can have an impact on the probability of getting arrested during a traffic stop. One weakness is that the study is taken from a small place in New Orleans, therefore it doesn't fully represent the entire US population. We model our outcome variable, arrested, as a linear function of sex, race, and zone. From this, we examined that Males are less likely of getting arrested than Females.
+```{r}
+#| label: beautiful-plot
+#| fig-cap: "Predicted Arrest Rate by Race, Zone, and Sex"
+#| fig-width: 10
+#| fig-height: 6
+#| warning: false
+
+preds |>
+  ggplot(aes(x = zone, y = .pred, color = race, linetype = sex, group = interaction(race, sex))) +
+  stat_summary(fun = mean, geom = "line", size = 1.2) +
+  stat_summary(fun = mean, geom = "point", size = 3, shape = 21, fill = "white") +
+  scale_color_manual(values = c("Black" = "#1f77b4", "White" = "#ff7f0e")) +
+  scale_linetype_manual(values = c("Male" = "solid", "Female" = "dashed")) +
+  labs(
+    title = "Predicted Arrest Rate by Race, Zone, and Sex",
+    subtitle = "Model-based averages from linear regression",
+    x = "Zone",
+    y = "Predicted Arrest Rate",
+    color = "Race",
+    linetype = "Sex"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18),
+    legend.position = "right",
+    panel.grid.minor = element_blank()
+  )
+
+```
+
+Racial arguments in policing outcomes remain an important issue, particularly when examining how factors like race and location influence the likelihood of an arrest during traffic stops. Using data from a study of New Orleans drivers, we wish to understand how driver race can have an impact on the probability of getting arrested during a traffic stop. One weakness is that the study is taken from a small place in New Orleans, therefore it doesn't fully represent the entire US population. We model our outcome variable, arrested, as a linear function of sex, race, and zone. From this, we examined that Males are less likely of getting arrested than Females. We estimate that the probability of a Black driver in New Orleans getting arrested during a traffic stop is roughly 5% more than the probability for White drivers.
 
